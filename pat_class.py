@@ -13,5 +13,19 @@ class pat(Object):
     """
 
     def __init__(self,ident):
-        
+       
         self.id = ident
+		self.age
+		self.sex
+		self.record = {'date':}
+		self.tcx_recording =  #attribute with points
+
+	
+	def read_txc(self,tcx_fname):
+		"""
+		Function that reads tcx file
+		"""
+		tcx_r = tcx_reader()
+
+		self.txc_recording = tcx_r.parsetcx(xml)
+
