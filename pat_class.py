@@ -4,7 +4,7 @@ Created on Mon Oct 17 12:02:46 2016
 
 @author: Rebeca Goya Esteban
          Óscar Barquero Pérez
-         Luaura Ruano
+         Laura Sanz Ruano
 """
 
 class pat(Object):
@@ -12,15 +12,15 @@ class pat(Object):
     Class that model a patient.
     """
 
-    def __init__(self,ident):
-       
+    def __init__(self,ident,edad,sexo):
+
         self.id = ident
-		self.age
-		self.sex
+		self.age = edad
+		self.sex = sexo
 		self.record = {'date':}
 		self.tcx_recording =  #attribute with points
 
-	
+
 	def read_txc(self,tcx_fname):
 		"""
 		Function that reads tcx file
@@ -29,3 +29,4 @@ class pat(Object):
 
 		self.txc_recording = tcx_r.parsetcx(xml)
 
+        t,hr = tcx_r.get_hr_time(points)
