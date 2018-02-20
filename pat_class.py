@@ -6,6 +6,8 @@ Created on Mon Oct 17 12:02:46 2016
          Óscar Barquero Pérez
          Laura Sanz Ruano
 """
+from tcx import parsetcx, get_hr_time
+
 
 class pat(Object):
     """
@@ -18,7 +20,7 @@ class pat(Object):
 		self.age = edad
 		self.sex = sexo
 		self.record = {'date':}
-		self.tcx_recording =  #attribute with points
+		self.tcx_recording =  [] #attribute with points
 
 
 	def read_txc(self,tcx_fname):
