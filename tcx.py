@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 #
 # file: tcx.py
 #
@@ -228,6 +228,8 @@ def get_hr_time(points,plot_flag = True):
 
     return t,hr
 
+#comment
+"""
 
 if __name__=='__main__':
     delim = "\t"
@@ -251,3 +253,4 @@ if __name__=='__main__':
 
     #plot heart rate
     t,hr = get_hr_time(points)
+"""
