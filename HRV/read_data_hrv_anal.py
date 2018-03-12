@@ -37,7 +37,7 @@ plt.figure(), plt.plot(rr)
 is_bpm = False #boolean falg to convert bpm heart rate signal (from Polar)
 #HRV Analysis
 if is_bpm:
-    rr = 60. * 1000/(hr)
+    rr = 60. * 1000/(hr) #rr intervals
     
 labels=['N']*len(rr)
 hrv_anal = HRV()
