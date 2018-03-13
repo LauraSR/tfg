@@ -216,7 +216,7 @@ def get_hr_time(points,plot_flag = True):
 
 
 #plotting heart rate
-    if plot_flag == True:
+    if plot_flag == False:
         #plt.close('all')
         plt.plot(t,hr,'.-')
         win_size = 25
