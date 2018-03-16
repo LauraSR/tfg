@@ -89,7 +89,7 @@ class HRV_entropy(object):
                     y_i[i-1]=(x_i[i+j-1]-x_i[i-1])                    
                     
                 
-                A_tau.append = (np.sum(self.heaviside(-y_i))-np.sum(self.heaviside(y_i)))/ (N-j)
+                A_tau.append(np.sum(self.heaviside(-y_i))-np.sum(self.heaviside(y_i)))/ (N-j)
                 
             return np.sum(A_tau)
              

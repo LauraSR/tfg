@@ -63,7 +63,6 @@ hrv_anal = HRV()
 prct = 0.2
 ind_not_N_beats=hrv_anal.artifact_ectopic_detection(rr, labels, prct, numBeatsAfterV = 4)
 valid = hrv_anal.is_valid(ind_not_N_beats,perct_valid = 0.2)
-
 #if every beat is Normal (sum(ind_not_N_beats) == 0), then no correction
 if ind_not_N_beats.sum() > 0:
     rr_corrected = hrv_anal.artifact_ectopic_correction(rr, ind_not_N_beats, method='linear')
@@ -73,9 +72,13 @@ else:
 plt.figure()
 plt.plot(rr_corrected)
 hrv_pat = hrv_anal.load_HRV_variables(rr_corrected)
-avnn = hrv_anal.avnn(rr_corrected)
+
 
 r = np.std(rr_corrected)*0.2
 hrv_en = HRV_entropy()
-sampen = hrv_en.SampEn(rr_corrected,m = 2,r=r,kernel = 'Heaviside')
+hrv_pat['sampen'] = hrv_en.SampEn(rr_corrected,m = 2,r=r,kernel = 'Heaviside')
+#hrv_pat['ti']=hrv_en.TimeIrreversibility(rr_corrected,tau=1)
+
+
+
 
