@@ -13,7 +13,174 @@ from HRV import HRV
 from HRV_Entropy import HRV_entropy
 from pat_class import pat
 from tcx import *
+from easygui import *
+import os
+import glob
 
+
+
+
+
+
+def get_folder():
+    """
+    Functions tha opens a dialog box to select a folder
+    """
+    dir_path = diropenbox(title="Choose folder ", default = './')
+    
+    return dir_path
+
+
+def folder_processing():
+    """
+    Function that process folder for a given subject in order to read the 
+    hr files
+    """
+    
+    dir_path = get_folder()
+    os.chdir(dir_path)
+
+    #run over folders
+    for folder in glob.glob('./*'):
+        os.chdir(folder)
+        
+        kind_test = os.path.basename(folder) #indicate which  kind
+        
+        #get tcx
+        tcx_file = os.path.basename(glob.glob('./*.tcx')[0])
+        
+        #HRV analysis tcx
+        pat_tcx_hrv_dict = HRV_analysis_tcx(tcx_file)
+        
+        np.save(kind_test+pat_tcx_hrv_dict['id'],pat_tcx_hrv_dict)
+        #get txt
+        txt_file = os.path.basename(glob.glob('./*.txt'))
+        
+        #HRV analysis bitalino
+        
+        
+        return tcx_file
+    
+
+def get_pat_data():
+    
+    msg = "Enter subject information"
+    title = "Run app"
+    fieldNames = ["Pat_Id", "Gender", "Age"]
+    fieldValues = []  # we start with blanks for the values
+    fieldValues = multenterbox(msg, title, fieldNames)
+    
+    return fieldValues
+        
+def HRV_analysis_tcx(fname):
+    """
+    Function that performs HRV analysis on tcx (polar signal)
+    """
+    
+    #get data pat
+    
+    fields = get_pat_data()
+    
+    idf = fields[0]
+    gender = fields[1]
+    age = fields[2]
+    
+    my_pat = pat(idf,age,gender)
+    
+    #read example.tcx
+    
+    t,hr = my_pat.read_txc(fname)
+    hr = np.array(hr)
+    
+    is_bpm = True #boolean falg to convert bpm heart rate signal (from Polar)
+    #HRV Analysis
+    if is_bpm:
+        rr = 60. * 1000/(hr) #rr intervals
+        
+    labels=['N']*len(rr)
+    hrv_anal = HRV()
+    prct = 0.2
+    ind_not_N_beats=hrv_anal.artifact_ectopic_detection(rr, labels, prct, numBeatsAfterV = 4)
+    valid = hrv_anal.is_valid(ind_not_N_beats,perct_valid = 0.2)
+    #if every beat is Normal (sum(ind_not_N_beats) == 0), then no correction
+    if ind_not_N_beats.sum() > 0:
+        rr_corrected = hrv_anal.artifact_ectopic_correction(rr, ind_not_N_beats, method='linear')
+    else:
+        rr_corrected = rr.copy()
+        
+    plt.figure()
+    
+    plt.plot(rr_corrected)
+    
+    plt.figure()
+    plt.plot(hr)
+    hrv_pat = hrv_anal.load_HRV_variables(rr_corrected)
+    
+    
+    r = np.std(rr_corrected)*0.2
+    hrv_en = HRV_entropy()
+    hrv_pat['sampen'] = hrv_en.SampEn(rr_corrected,m = 2,r=r,kernel = 'Heaviside')
+    hrv_pat['id'] = idf
+    hrv_pat['gender'] = gender
+    hrv_pat['age'] = age    
+    return hrv_pat
+    
+    #pat()
+    
+def HRV_analysis_bitalino(fname):
+    """
+    Function that performs HRV analysis on tcx (polar signal)
+    """
+    
+    #get data pat
+    
+    f = np.loadtxt(fname)
+    
+    fields = get_pat_data()
+    
+    idf = fields[0]
+    gender = fields[1]
+    age = fields[2]
+    
+    my_pat = pat(idf,age,gender)
+    
+    
+    #read bitalino file
+    ecg = f[:,6] #verify the channel with ECG 
+    
+    labels=['N']*len(rr)
+    hrv_anal = HRV()
+    prct = 0.2
+    ind_not_N_beats=hrv_anal.artifact_ectopic_detection(rr, labels, prct, numBeatsAfterV = 4)
+    valid = hrv_anal.is_valid(ind_not_N_beats,perct_valid = 0.2)
+    #if every beat is Normal (sum(ind_not_N_beats) == 0), then no correction
+    if ind_not_N_beats.sum() > 0:
+        rr_corrected = hrv_anal.artifact_ectopic_correction(rr, ind_not_N_beats, method='linear')
+    else:
+        rr_corrected = rr.copy()
+        
+    plt.figure()
+    
+    plt.plot(rr_corrected)
+    
+    plt.figure()
+    plt.plot(hr)
+    hrv_pat = hrv_anal.load_HRV_variables(rr_corrected)
+    
+    
+    r = np.std(rr_corrected)*0.2
+    hrv_en = HRV_entropy()
+    hrv_pat['sampen'] = hrv_en.SampEn(rr_corrected,m = 2,r=r,kernel = 'Heaviside')
+    hrv_pat['id'] = idf
+    hrv_pat['gender'] = gender
+    hrv_pat['age'] = age    
+    return hrv_pat
+    
+    #pat()
+    
+    
+folder_processing()
+    
 """
 f = np.loadtxt("sigs/opensignals_201607181603_2018-01-09_13-14-55.txt")
 #f = np.loadtxt("opensignals_Oscar_2017-10-17_12-27-32.txt")
@@ -42,6 +209,8 @@ Analysis with polar
 
 #create a pat
 
+
+"""
 idf = '01'
 age = 38
 gender = 'M'
@@ -78,7 +247,7 @@ r = np.std(rr_corrected)*0.2
 hrv_en = HRV_entropy()
 hrv_pat['sampen'] = hrv_en.SampEn(rr_corrected,m = 2,r=r,kernel = 'Heaviside')
 #hrv_pat['ti']=hrv_en.TimeIrreversibility(rr_corrected,tau=1)
-
+"""
 
 
 
