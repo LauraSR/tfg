@@ -42,7 +42,7 @@ def folder_processing():
     os.chdir(dir_path)
 
     #run over folders
-    for folder in glob.glob('./*'):
+    for folder in glob.iglob('./*'):
         os.chdir(folder)
         
         kind_test = os.path.basename(folder) #indicate which  kind
@@ -53,13 +53,13 @@ def folder_processing():
         #HRV analysis tcx
         pat_tcx_hrv_dict = HRV_analysis_tcx(tcx_file)
         
-        np.save(kind_test+'_'+pat_tcx_hrv_dict['id']+'tcx',pat_tcx_hrv_dict)
+        np.save(kind_test+'_'+pat_tcx_hrv_dict['id']+'_tcx',pat_tcx_hrv_dict)
         #get txt
         txt_file = os.path.basename(glob.glob('./*.txt')[0])
         
         #HRV analysis bitalino
         pat_bitalino_hrv_dict = HRV_analysis_bitalino(txt_file)
-        np.save(kind_test+'_'+pat_bitalino_hrv_dict['id']+'bitalino',pat_bitalino_hrv_dict)
+        np.save(kind_test+'_'+pat_bitalino_hrv_dict['id']+'_bitalino',pat_bitalino_hrv_dict)
         
         os.chdir("..")
         
@@ -151,7 +151,7 @@ def HRV_analysis_bitalino(fname):
     
     
     #read bitalino file
-    ecg = f[:,6] #verify the channel with ECG 
+    ecg = f[:,7] #verify the channel with ECG 
     plt.plot(ecg)
     # get rr from ecg
     fs=1000;
@@ -160,6 +160,8 @@ def HRV_analysis_bitalino(fname):
     beat, th, qrs_index= exp_beat_detection(ecg_filtered,fs,Tr = .180,a = .7,b = 0.999)
     r_peak, rr = r_peak_detection(ecg_filtered,ecg,fs,beat,th,qrs_index,Tr = .100)
 
+    plt.plot(ecg)
+    
     
     labels=['N']*len(rr)
     hrv_anal = HRV()
@@ -177,7 +179,7 @@ def HRV_analysis_bitalino(fname):
     plt.plot(rr_corrected)
     
     plt.figure()
-    plt.plot(hr)
+    plt.plot(rr_corrected)
     hrv_pat = hrv_anal.load_HRV_variables(rr_corrected)
     
     

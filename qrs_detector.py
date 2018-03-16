@@ -33,7 +33,7 @@ def detrendSpline(signal,fs,l_w = 1.2):
     s_m = np.zeros(int(numSeg))
     t_m = np.zeros(int(numSeg))
     
-    for k in np.arange(numSeg):
+    for k in range(int(numSeg)):
         #for over each window and compute the median
         ind_seg = (t >= (k)*l_w) & (t <= (k+1)*l_w)
         t_aux = t[ind_seg]
