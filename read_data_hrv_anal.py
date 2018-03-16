@@ -16,6 +16,7 @@ from tcx import *
 from easygui import *
 import os
 import glob
+from qrs_detector import *
 
 
 
@@ -52,11 +53,15 @@ def folder_processing():
         #HRV analysis tcx
         pat_tcx_hrv_dict = HRV_analysis_tcx(tcx_file)
         
-        np.save(kind_test+pat_tcx_hrv_dict['id'],pat_tcx_hrv_dict)
+        np.save(kind_test+'_'+pat_tcx_hrv_dict['id']+'tcx',pat_tcx_hrv_dict)
         #get txt
-        txt_file = os.path.basename(glob.glob('./*.txt'))
+        txt_file = os.path.basename(glob.glob('./*.txt')[0])
         
         #HRV analysis bitalino
+        pat_bitalino_hrv_dict = HRV_analysis_bitalino(txt_file)
+        np.save(kind_test+'_'+pat_bitalino_hrv_dict['id']+'bitalino',pat_bitalino_hrv_dict)
+        
+        os.chdir("..")
         
         
         return tcx_file
@@ -147,6 +152,14 @@ def HRV_analysis_bitalino(fname):
     
     #read bitalino file
     ecg = f[:,6] #verify the channel with ECG 
+    plt.plot(ecg)
+    # get rr from ecg
+    fs=1000;
+    ecg_d,t = detrendSpline(ecg,fs,l_w = 1.2)
+    ecg_filtered = bandpass_qrs_filter(ecg_d, fs, fc1 = 5,fc2 = 15)
+    beat, th, qrs_index= exp_beat_detection(ecg_filtered,fs,Tr = .180,a = .7,b = 0.999)
+    r_peak, rr = r_peak_detection(ecg_filtered,ecg,fs,beat,th,qrs_index,Tr = .100)
+
     
     labels=['N']*len(rr)
     hrv_anal = HRV()
