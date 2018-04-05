@@ -27,7 +27,7 @@ def get_folder():
     """
     Functions tha opens a dialog box to select a folder
     """
-    dir_path = diropenbox(title="Choose folder ", default = './')
+    dir_path = diropenbox(title="Choose A Subject folder with subfolders andando and sentado ", default = './')
     
     return dir_path
 
@@ -58,13 +58,13 @@ def folder_processing():
         txt_file = os.path.basename(glob.glob('./*.txt')[0])
         
         #HRV analysis bitalino
-        pat_bitalino_hrv_dict = HRV_analysis_bitalino(txt_file)
+        pat_bitalino_hrv_dict,ecginf = HRV_analysis_bitalino(txt_file)
         np.save(kind_test+'_'+pat_bitalino_hrv_dict['id']+'_bitalino',pat_bitalino_hrv_dict)
         
         os.chdir("..")
         
         
-        return tcx_file
+        return tcx_file,ecginf
     
 
 def get_pat_data():
@@ -113,12 +113,12 @@ def HRV_analysis_tcx(fname):
     else:
         rr_corrected = rr.copy()
         
-    plt.figure()
+    #plt.figure()
     
-    plt.plot(rr_corrected)
+   # plt.plot(rr_corrected)
     
-    plt.figure()
-    plt.plot(hr)
+    #plt.figure()
+    #plt.plot(hr)
     hrv_pat = hrv_anal.load_HRV_variables(rr_corrected)
     
     
@@ -152,34 +152,39 @@ def HRV_analysis_bitalino(fname):
     
     #read bitalino file
     ecg = f[:,7] #verify the channel with ECG 
-    plt.plot(ecg)
+    #plt.plot(ecg)
     # get rr from ecg
-    fs=1000;
+    fs=1000.;
     ecg_d,t = detrendSpline(ecg,fs,l_w = 1.2)
-    ecg_filtered = bandpass_qrs_filter(ecg_d, fs, fc1 = 5,fc2 = 15)
-    beat, th, qrs_index= exp_beat_detection(ecg_filtered,fs,Tr = .180,a = .7,b = 0.999)
-    r_peak, rr = r_peak_detection(ecg_filtered,ecg,fs,beat,th,qrs_index,Tr = .100)
+    ecg_filtered = bandpass_qrs_filter(ecg_d, fs, fc1 = 12,fc2 = 20)
+    beat, th, qrs_index= exp_beat_detection(ecg_filtered,fs,Tr = .200,a = .8,b = 0.999)
+    r_peak, rr = r_peak_detection(ecg_filtered,ecg,fs,beat,th,qrs_index,Tr = .180)
 
-    plt.plot(ecg)
-    
+    t = np.arange(0,len(ecg))/fs
+    plt.close('all')
+    plt.plot(t,ecg_filtered)
+    plt.plot(t,th)
+    plt.plot(t[r_peak],ecg_filtered[r_peak],'r*')
     
     labels=['N']*len(rr)
     hrv_anal = HRV()
     prct = 0.2
     ind_not_N_beats=hrv_anal.artifact_ectopic_detection(rr, labels, prct, numBeatsAfterV = 4)
     valid = hrv_anal.is_valid(ind_not_N_beats,perct_valid = 0.2)
+    
     #if every beat is Normal (sum(ind_not_N_beats) == 0), then no correction
     if ind_not_N_beats.sum() > 0:
         rr_corrected = hrv_anal.artifact_ectopic_correction(rr, ind_not_N_beats, method='linear')
+        rr_corrected = rr.copy()
     else:
         rr_corrected = rr.copy()
         
-    plt.figure()
+    #plt.figure()
     
-    plt.plot(rr_corrected)
+    #plt.plot(rr_corrected)
     
-    plt.figure()
-    plt.plot(rr_corrected)
+    #plt.figure()
+    #plt.plot(rr_corrected)
     hrv_pat = hrv_anal.load_HRV_variables(rr_corrected)
     
     
@@ -188,13 +193,16 @@ def HRV_analysis_bitalino(fname):
     hrv_pat['sampen'] = hrv_en.SampEn(rr_corrected,m = 2,r=r,kernel = 'Heaviside')
     hrv_pat['id'] = idf
     hrv_pat['gender'] = gender
-    hrv_pat['age'] = age    
-    return hrv_pat
+    hrv_pat['age'] = age
+
+    ecginf = {'ecg':ecg,'r':r_peak}    
+    return hrv_pat,ecginf
     
     #pat()
     
     
-folder_processing()
+foo,ecginfo = folder_processing() #Hay que elegir la carpeta de paciente, que contiene las subcarpetas
+#andando y sentado
     
 """
 f = np.loadtxt("sigs/opensignals_201607181603_2018-01-09_13-14-55.txt")

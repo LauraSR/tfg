@@ -713,7 +713,7 @@ class HRV(object):
         The interpolator method is given by the string method (cubic','linear','nearest').
         """
         
-                
+      
         
         t_rr = np.cumsum(rr)
 
