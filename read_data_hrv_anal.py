@@ -64,7 +64,7 @@ def folder_processing():
         os.chdir("..")
         
         
-        return tcx_file,ecginf
+    return tcx_file,ecginf
     
 
 def get_pat_data():
@@ -76,7 +76,24 @@ def get_pat_data():
     fieldValues = multenterbox(msg, title, fieldNames)
     
     return fieldValues
-        
+
+def remove_zeros(hr):
+    """
+    Function that removes zeros from hr signal from POLAR
+    """
+    
+    #first check zero positions
+    
+    ind_zeros = (hr == 0)
+    
+    x_p = np.arange(0,len(hr))
+    x_p = x_p[~ind_zeros] #get valuse diff from zero
+    hr_p = hr[~ind_zeros]
+    
+    hr_c = np.interp(np.arange(0,len(hr)),x_p,hr_p) #may be change linear interpolation?
+    
+    return hr_c
+       
 def HRV_analysis_tcx(fname):
     """
     Function that performs HRV analysis on tcx (polar signal)
@@ -98,10 +115,15 @@ def HRV_analysis_tcx(fname):
     hr = np.array(hr)
     
     is_bpm = True #boolean falg to convert bpm heart rate signal (from Polar)
+    
+    #remove 0 from hr
+    if np.sum(hr == 0) > 0:
+        hr = remove_zeros(hr)
     #HRV Analysis
     if is_bpm:
         rr = 60. * 1000/(hr) #rr intervals
-        
+    
+    
     labels=['N']*len(rr)
     hrv_anal = HRV()
     prct = 0.2
@@ -127,7 +149,9 @@ def HRV_analysis_tcx(fname):
     hrv_pat['sampen'] = hrv_en.SampEn(rr_corrected,m = 2,r=r,kernel = 'Heaviside')
     hrv_pat['id'] = idf
     hrv_pat['gender'] = gender
-    hrv_pat['age'] = age    
+    hrv_pat['age'] = age  
+    hrv_pat['rr'] = rr_corrected
+    hrv_pat['hr'] = hr
     return hrv_pat
     
     #pat()
@@ -151,7 +175,7 @@ def HRV_analysis_bitalino(fname):
     
     
     #read bitalino file
-    ecg = f[:,7] #verify the channel with ECG 
+    ecg = f[:,6] #verify the channel with ECG 
     #plt.plot(ecg)
     # get rr from ecg
     fs=1000.;
@@ -162,9 +186,9 @@ def HRV_analysis_bitalino(fname):
 
     t = np.arange(0,len(ecg))/fs
     plt.close('all')
-    plt.plot(t,ecg_filtered)
+    plt.plot(t,ecg)
     plt.plot(t,th)
-    plt.plot(t[r_peak],ecg_filtered[r_peak],'r*')
+    plt.plot(t[r_peak],ecg[r_peak],'r*')
     
     labels=['N']*len(rr)
     hrv_anal = HRV()
@@ -194,7 +218,7 @@ def HRV_analysis_bitalino(fname):
     hrv_pat['id'] = idf
     hrv_pat['gender'] = gender
     hrv_pat['age'] = age
-
+    hrv_pat['rr'] = rr_corrected
     ecginf = {'ecg':ecg,'r':r_peak}    
     return hrv_pat,ecginf
     
