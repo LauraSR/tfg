@@ -723,7 +723,7 @@ class HRV(object):
         
         #TO_DO verify extrapolation with splines in scipy
         #Meanwhile: extrapolate using the mean value of the 5 first, 
-        f = interpolate.interp1d(t_rr_aux,rr_aux,method,fill_value = (np.mean(rr_aux[:5]),np.mean(rr_aux[-5:])),bounds_error = False)
+        f = interpolate.interp1d(t_rr_aux,rr_aux,method,fill_value = (np.mean(rr_aux[:5])),bounds_error = False)        
         
         rr_corrected = f(t_rr)
         

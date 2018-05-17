@@ -23,11 +23,11 @@ from qrs_detector import *
 
 
 
-def get_folder():
+def get_folder(tit = "Choose A Subject folder with subfolders 'activo' and 'reposo' "):
     """
     Functions tha opens a dialog box to select a folder
     """
-    dir_path = diropenbox(title="Choose A Subject folder with subfolders andando and sentado ", default = './')
+    dir_path = diropenbox(title=tit, default = './')
     
     return dir_path
 
@@ -62,10 +62,11 @@ def folder_processing():
         np.save(kind_test+'_'+pat_bitalino_hrv_dict['id']+'_bitalino',pat_bitalino_hrv_dict)
         
         os.chdir("..")
-        
+        os.chdir("..")
         
     return tcx_file,ecginf
     
+              
 
 def get_pat_data():
     
@@ -122,7 +123,11 @@ def HRV_analysis_tcx(fname):
     #HRV Analysis
     if is_bpm:
         rr = 60. * 1000/(hr) #rr intervals
-    
+  
+    plt.close('all')   
+    plt.figure(1)  
+    plt.title("RR Polar")
+    plt.plot(rr)  
     
     labels=['N']*len(rr)
     hrv_anal = HRV()
@@ -134,15 +139,17 @@ def HRV_analysis_tcx(fname):
         rr_corrected = hrv_anal.artifact_ectopic_correction(rr, ind_not_N_beats, method='linear')
     else:
         rr_corrected = rr.copy()
-        
-    #plt.figure()
     
-   # plt.plot(rr_corrected)
+    plt.figure(2)  
+    plt.title("RR Corregidos Polar")
+    plt.plot(rr_corrected)
+
+    plt.figure(3)
+    plt.title("HR Polar")
+    plt.plot(hr)
     
-    #plt.figure()
-    #plt.plot(hr)
     hrv_pat = hrv_anal.load_HRV_variables(rr_corrected)
-    
+ 
     
     r = np.std(rr_corrected)*0.2
     hrv_en = HRV_entropy()
@@ -158,7 +165,7 @@ def HRV_analysis_tcx(fname):
     
 def HRV_analysis_bitalino(fname):
     """
-    Function that performs HRV analysis on tcx (polar signal)
+    Function that performs HRV analysis on txt (bitalino signal)
     """
     
     #get data pat
@@ -181,13 +188,25 @@ def HRV_analysis_bitalino(fname):
     fs=1000.;
     ecg_d,t = detrendSpline(ecg,fs,l_w = 1.2)
     ecg_filtered = bandpass_qrs_filter(ecg_d, fs, fc1 = 12,fc2 = 20)
-    beat, th, qrs_index= exp_beat_detection(ecg_filtered,fs,Tr = .200,a = .8,b = 0.999)
-    r_peak, rr = r_peak_detection(ecg_filtered,ecg,fs,beat,th,qrs_index,Tr = .180)
+    beat, th, qrs_index= exp_beat_detection(ecg_filtered,fs,Tr = .220,a = .75,b = 0.9998)
+    r_peak, rr = r_peak_detection(ecg_filtered,ecg,fs,beat,th,qrs_index,Tr = .220)
+    
+    plt.close('all')   
+    plt.figure(1)  
+    plt.title("RR BiTalino")
+    plt.plot(rr) 
 
     t = np.arange(0,len(ecg))/fs
-    plt.close('all')
-    plt.plot(t,ecg)
+    
+    plt.figure(2)  
+    plt.title("ECG Filtered")
+    plt.plot(t,ecg_filtered)
     plt.plot(t,th)
+    plt.plot(t[r_peak],ecg_filtered[r_peak],'r*')
+    
+    plt.figure(3)
+    plt.title("ECG")
+    plt.plot(t,ecg)
     plt.plot(t[r_peak],ecg[r_peak],'r*')
     
     labels=['N']*len(rr)
@@ -203,12 +222,10 @@ def HRV_analysis_bitalino(fname):
     else:
         rr_corrected = rr.copy()
         
-    #plt.figure()
-    
-    #plt.plot(rr_corrected)
-    
-    #plt.figure()
-    #plt.plot(rr_corrected)
+    plt.figure(4)  
+    plt.title("RR Corregidos BiTalino")
+    plt.plot(rr_corrected)
+
     hrv_pat = hrv_anal.load_HRV_variables(rr_corrected)
     
     
